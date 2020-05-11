@@ -102,6 +102,12 @@ public class ContactsActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+
+        validateUser();
+
+
+
         FirebaseRecyclerOptions<Contacts> options
                 = new FirebaseRecyclerOptions.Builder<Contacts>()
                 .setQuery(contactsRef.child(currentUserID),Contacts.class)
@@ -109,8 +115,8 @@ public class ContactsActivity extends AppCompatActivity {
         FirebaseRecyclerAdapter<Contacts,ContactsViewHolder> firebaseRecyclerAdapter =
                 new FirebaseRecyclerAdapter<Contacts, ContactsViewHolder>(options) {
                     @Override
-                    protected void onBindViewHolder(@NonNull final ContactsViewHolder holder, int i, @NonNull Contacts contacts) {
-                        final String listUserID = getRef(i).getKey();
+                    protected void onBindViewHolder(@NonNull final ContactsViewHolder holder, int position, @NonNull Contacts contacts) {
+                        final String listUserID = getRef(position).getKey();
                         usersRef.child(listUserID).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -120,6 +126,16 @@ public class ContactsActivity extends AppCompatActivity {
                                      holder.userNameTxt.setText(userName);
                                     Picasso.get().load(profileImage).into(holder.profileImageView);
                                 }
+
+                                holder.callBtn.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent callingIntent = new Intent(ContactsActivity.this,CallingActivity.class);
+                                        callingIntent.putExtra("visit_user_id",listUserID);
+                                        startActivity(callingIntent);
+                                        finish();
+                                    }
+                                });
                             }
 
                             @Override
@@ -156,6 +172,26 @@ public class ContactsActivity extends AppCompatActivity {
 
 
         }
+    }
+
+    private void validateUser(){
+        DatabaseReference reference = FirebaseDatabase.getInstance()
+                .getReference();
+        reference.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()){
+                    Intent settingsIntent = new Intent(ContactsActivity.this,SettingsActivity.class);
+                    startActivity(settingsIntent);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 }
