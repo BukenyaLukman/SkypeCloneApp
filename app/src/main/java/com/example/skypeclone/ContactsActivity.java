@@ -2,6 +2,7 @@ package com.example.skypeclone;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +33,7 @@ public class ContactsActivity extends AppCompatActivity {
     private RecyclerView myContactList;
     private ImageView findPeopleBtn;
 
-    private DatabaseReference friendRequestRef,contactsRef,usersRef;
+    private DatabaseReference contactsRef,usersRef;
     private FirebaseAuth mAuth;
     private String currentUserID;
     private String userName, profileImage = "";
@@ -46,7 +47,6 @@ public class ContactsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getCurrentUser().getUid();
 
-        friendRequestRef = FirebaseDatabase.getInstance().getReference().child("Friend Requests");
         contactsRef = FirebaseDatabase.getInstance().getReference().child("Contacts");
         usersRef = FirebaseDatabase.getInstance().getReference().child("Users");
 
@@ -133,7 +133,9 @@ public class ContactsActivity extends AppCompatActivity {
                     @NonNull
                     @Override
                     public ContactsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                        return null;
+                        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.contact_design,parent,false);
+                        ContactsViewHolder viewHolder = new ContactsViewHolder(view);
+                        return viewHolder;
                     }
                 };
         myContactList.setAdapter(firebaseRecyclerAdapter);
