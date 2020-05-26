@@ -1,5 +1,6 @@
 package com.example.skypeclone;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -7,6 +8,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -14,6 +17,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
+
+import java.util.HashMap;
 
 public class CallingActivity extends AppCompatActivity {
 
@@ -73,5 +78,41 @@ public class CallingActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        usersRef.child(receiverUserID)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(!dataSnapshot.hasChild("Calling") && !dataSnapshot.hasChild("Ringing")){
+                            final HashMap<String,Object> callingInfo = new HashMap<>();
+                            callingInfo.put("calling",receiverUserID);
+
+                            usersRef.child(SenderUserID).child("Calling")
+                                    .updateChildren(callingInfo)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if(task.isSuccessful()){
+                                                final HashMap<String,Object> ringingInfo = new HashMap<>();
+                                                ringingInfo.put("ringing",SenderUserID);
+
+                                                usersRef.child(receiverUserID)
+                                                        .child("Ringing")
+                                                        .updateChildren(ringingInfo);
+                                            }
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 }

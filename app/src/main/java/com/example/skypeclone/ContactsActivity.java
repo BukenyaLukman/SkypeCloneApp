@@ -37,6 +37,8 @@ public class ContactsActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String currentUserID;
     private String userName, profileImage = "";
+    private String calledBy = "";
+
 
 
     @Override
@@ -103,10 +105,8 @@ public class ContactsActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-
+        checkForReceivingCall();
         validateUser();
-
-
 
         FirebaseRecyclerOptions<Contacts> options
                 = new FirebaseRecyclerOptions.Builder<Contacts>()
@@ -156,6 +156,28 @@ public class ContactsActivity extends AppCompatActivity {
                 };
         myContactList.setAdapter(firebaseRecyclerAdapter);
         firebaseRecyclerAdapter.startListening();
+    }
+
+    private void checkForReceivingCall() {
+        usersRef.child(currentUserID)
+                .child("Ringing")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.hasChild("ringing")){
+                            calledBy = dataSnapshot.child("ringing").getValue()
+                                    .toString();
+                            Intent callingIntent = new Intent(ContactsActivity.this,CallingActivity.class);
+                            callingIntent.putExtra("visit_user_id",calledBy);
+                            startActivity(callingIntent);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     public static class ContactsViewHolder extends RecyclerView.ViewHolder {
